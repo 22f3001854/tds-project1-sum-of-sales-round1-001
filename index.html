@@ -1,76 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sales Summary</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sales Summary</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
-  <div class="container my-4">
+<div class="container my-4">
     <h1 class="mb-4">Sales Summary</h1>
     <div class="mb-3">
-      <strong>Total Sales: </strong><span id="total-sales" class="fs-4">$0.00</span>
+        <h4>Total Sales: <span id="total-sales">0</span></h4>
     </div>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Sales</th>
-        </tr>
-      </thead>
-      <tbody id="sales-table-body">
-        <!-- Data will be inserted here -->
-      </tbody>
+    <table class="table table-striped" id="sales-table">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Sales</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
     </table>
-  </div>
-
-  <script>
-    // Function to fetch and process CSV data
-    async function loadSalesData() {
-      try {
-        const response = await fetch('data.csv');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const csvText = await response.text();
-        parseAndDisplayCSV(csvText);
-      } catch (error) {
-        console.error('Error fetching the CSV data:', error);
-        document.getElementById('total-sales').textContent = 'Error loading data';
-      }
-    }
-
-    function parseAndDisplayCSV(csvText) {
-      const lines = csvText.trim().split('\n');
-      let totalSales = 0;
-      const tbody = document.getElementById('sales-table-body');
-      tbody.innerHTML = '';
-
-      lines.forEach((line) => {
-        const [item, salesStr] = line.split(',');
-        const sales = parseFloat(salesStr);
-        if (item && !isNaN(sales)) {
-          totalSales += sales;
-          const tr = document.createElement('tr');
-
-          const tdItem = document.createElement('td');
-          tdItem.textContent = item;
-          tr.appendChild(tdItem);
-
-          const tdSales = document.createElement('td');
-          tdSales.textContent = `$${sales.toFixed(2)}`;
-          tr.appendChild(tdSales);
-
-          tbody.appendChild(tr);
-        }
-      });
-
-      document.getElementById('total-sales').textContent = `$${totalSales.toFixed(2)}`;
-    }
-
-    // Initiate data load on page load
-    window.addEventListener('DOMContentLoaded', loadSalesData);
-  </script>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('data.csv')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.text();
+            })
+            .then(csvText => {
+                const lines = csvText.trim().split('\n');
+                let totalSales = 0;
+                const tbody = document.querySelector('#sales-table tbody');
+                lines.forEach(line => {
+                    const [item, salesStr] = line.split(',');
+                    const sales = parseFloat(salesStr);
+                    if (!isNaN(sales)) {
+                        totalSales += sales;
+                        const row = document.createElement('tr');
+                        const itemTd = document.createElement('td');
+                        itemTd.textContent = item;
+                        const salesTd = document.createElement('td');
+                        salesTd.textContent = sales.toFixed(2);
+                        row.appendChild(itemTd);
+                        row.appendChild(salesTd);
+                        tbody.appendChild(row);
+                    }
+                });
+                document.getElementById('total-sales').textContent = totalSales.toFixed(2);
+            })
+            .catch(error => {
+                console.error('Error fetching or parsing CSV:', error);
+                document.getElementById('total-sales').textContent = 'Error';
+            });
+    });
+</script>
 </body>
 </html>
